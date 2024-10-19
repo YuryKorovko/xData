@@ -1,0 +1,25 @@
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: xData
+  r2dbc:
+    password: test
+    url: r2dbc:h2:file:///./db/xdata;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;
+    username: test
+    name: xdata
+  h2:
+    console:
+      enabled: true
+      path: /h2
+  flyway:
+    url: jdbc:h2:file:./db/xdata;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;
+    user: test
+    password: test
+    locations: classpath:db/migration
+    driver-class-name: org.h2.Driver
+
+
+
+
+
