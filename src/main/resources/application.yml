@@ -5,7 +5,7 @@ spring:
     name: xData
   r2dbc:
     password: test
-    url: r2dbc:h2:file:///./db/xdata;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;
+    url: r2dbc:h2:file:///./db/xdata;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;DATABASE_TO_UPPER=false;
     username: test
     name: xdata
   h2:
@@ -13,13 +13,18 @@ spring:
       enabled: true
       path: /h2
   flyway:
-    url: jdbc:h2:file:./db/xdata;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;
+    url: jdbc:h2:file:./db/xdata;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;MODE=PostgreSQL;DATABASE_TO_UPPER=false;
     user: test
     password: test
     locations: classpath:db/migration
     driver-class-name: org.h2.Driver
 
 
+crypto:
+  gateway:
+    btc: http://localhost:8080/bitcoin
+    eth: http://localhost:8080/eth
+    usdt: http://localhost:8080/usdt
 
 
 

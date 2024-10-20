@@ -1,0 +1,1 @@
+alter table wallets add constraint currency_unique unique (user_id, currency);
