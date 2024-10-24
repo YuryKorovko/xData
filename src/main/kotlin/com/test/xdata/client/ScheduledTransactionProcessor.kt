@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.reactive.TransactionalOperator
 import org.springframework.transaction.reactive.transactional
+import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
 @Service
@@ -43,20 +44,25 @@ class ScheduledTransactionProcessor(
                             .zipWith(walletRepository.findByIdForUpdate(trx.toWalletId))
                             .publishOn(Schedulers.boundedElastic())
                             .doOnNext { pair ->
-                                pair.t1.balance.minus(trx.amount)
-                                pair.t2.balance.plus(trx.amount)
-                                walletRepository.saveAll(listOf(pair.t1, pair.t2)).collectList().subscribe()
-                            }
-                            .subscribe()
+                                if (pair.t1.balance < trx.amount) {
+                                    logger.error { "${pair.t1.id} doesn't have enough money to withdraw" }
+                                    pair.t1.balance.minus(trx.amount)
+                                    pair.t2.balance.plus(trx.amount)
+                                    walletRepository.saveAll(listOf(pair.t1, pair.t2)).collectList().subscribe()
+                                }
+                            }.subscribe()
                     }
                     if (trx.operation == Transaction.Operation.DEPOSIT) {
                         walletRepository.findByIdForUpdate(trx.toWalletId)
                             .zipWith(walletRepository.findByIdForUpdate(trx.fromWalletId))
                             .publishOn(Schedulers.boundedElastic())
                             .doOnNext { pair ->
-                                pair.t1.balance.plus(trx.amount)
-                                pair.t2.balance.minus(trx.amount)
-                                walletRepository.saveAll(listOf(pair.t1, pair.t2)).collectList().subscribe()
+                                if (pair.t2.balance < trx.amount) {
+                                    logger.error { "${pair.t2.id} doesn't have enough money to withdraw" }
+                                    pair.t1.balance.plus(trx.amount)
+                                    pair.t2.balance.minus(trx.amount)
+                                    walletRepository.saveAll(listOf(pair.t1, pair.t2)).collectList().subscribe()
+                                }
                             }.subscribe()
                     }
                     transactionRepository.save(trx.copy(status = Transaction.Status.PROCESSED))
